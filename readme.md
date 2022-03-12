@@ -47,7 +47,7 @@ Use NPM to install some needed packages:
 
 ### Installation
 
-Once Ganache and Truffle are installed, you can pull this repo
+Once Ganache and Truffle are installed
 
 1. Navigate to where you want the repo to go
 2. Clone the repo
@@ -63,7 +63,7 @@ Once Ganache and Truffle are installed, you can pull this repo
 <!-- USAGE EXAMPLES -->
 ## Usage
 
-from the cloned directory, open 3 terminal windows.
+From the cloned directory, open 3 terminal windows.
 
 In the first terminal, launch ganache:
    ```sh
@@ -74,13 +74,16 @@ In the second terminal run:
    ```sh
    truffle test
    ```
+It should succeed.
+
+
 
 In the third terminal run:
    ```sh
    node index.js
    ```
 
-You now have a functional web3 test environment and scaffold for your server and website.
+You now have a local blocking, a solidity test environment and starting place for your website.
 
 Now go and build something really cool.
 
