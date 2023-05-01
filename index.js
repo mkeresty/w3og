@@ -1,38 +1,43 @@
-const express = require('express')
 const path = require('path')
-//const cors = require('cors');
+const express = require('express')
+const wildcardSubdomains = require('wildcard-subdomains')
+const ethers = require('ethers');
+const mime = require('mime-types')
 const PORT = process.env.PORT || 5000
-const Web3 = require('web3');
-const svg64 = require('svg64');
-const sharp = require('sharp');
-var web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
 
-// NOTE: This is the ABI [application binary interface]
-// this defines all the functions available in your smart Contract
-// when you change your smart contract, you will need to update this ABI
-const erc721Abi =
-  [ { "inputs": [], "stateMutability": "nonpayable", "type": "constructor" }, { "anonymous": false, "inputs": [ { "indexed": true, "internalType": "address", "name": "owner", "type": "address" }, { "indexed": true, "internalType": "address", "name": "approved", "type": "address" }, { "indexed": true, "internalType": "uint256", "name": "tokenId", "type": "uint256" } ], "name": "Approval", "type": "event" }, { "anonymous": false, "inputs": [ { "indexed": true, "internalType": "address", "name": "owner", "type": "address" }, { "indexed": true, "internalType": "address", "name": "operator", "type": "address" }, { "indexed": false, "internalType": "bool", "name": "approved", "type": "bool" } ], "name": "ApprovalForAll", "type": "event" }, { "anonymous": false, "inputs": [ { "indexed": true, "internalType": "address", "name": "from", "type": "address" }, { "indexed": true, "internalType": "address", "name": "to", "type": "address" }, { "indexed": true, "internalType": "uint256", "name": "tokenId", "type": "uint256" } ], "name": "Transfer", "type": "event" }, { "inputs": [], "name": "_maxSupply", "outputs": [ { "internalType": "uint256", "name": "", "type": "uint256" } ], "stateMutability": "view", "type": "function" }, { "inputs": [ { "internalType": "address", "name": "to", "type": "address" }, { "internalType": "uint256", "name": "tokenId", "type": "uint256" } ], "name": "approve", "outputs": [], "stateMutability": "nonpayable", "type": "function" }, { "inputs": [ { "internalType": "address", "name": "owner", "type": "address" } ], "name": "balanceOf", "outputs": [ { "internalType": "uint256", "name": "", "type": "uint256" } ], "stateMutability": "view", "type": "function" }, { "inputs": [ { "internalType": "uint256", "name": "tokenId", "type": "uint256" } ], "name": "getApproved", "outputs": [ { "internalType": "address", "name": "", "type": "address" } ], "stateMutability": "view", "type": "function" }, { "inputs": [ { "internalType": "address", "name": "owner", "type": "address" }, { "internalType": "address", "name": "operator", "type": "address" } ], "name": "isApprovedForAll", "outputs": [ { "internalType": "bool", "name": "", "type": "bool" } ], "stateMutability": "view", "type": "function" }, { "inputs": [], "name": "name", "outputs": [ { "internalType": "string", "name": "", "type": "string" } ], "stateMutability": "view", "type": "function" }, { "inputs": [ { "internalType": "uint256", "name": "tokenId", "type": "uint256" } ], "name": "ownerOf", "outputs": [ { "internalType": "address", "name": "", "type": "address" } ], "stateMutability": "view", "type": "function" }, { "inputs": [ { "internalType": "address", "name": "from", "type": "address" }, { "internalType": "address", "name": "to", "type": "address" }, { "internalType": "uint256", "name": "tokenId", "type": "uint256" } ], "name": "safeTransferFrom", "outputs": [], "stateMutability": "nonpayable", "type": "function" }, { "inputs": [ { "internalType": "address", "name": "from", "type": "address" }, { "internalType": "address", "name": "to", "type": "address" }, { "internalType": "uint256", "name": "tokenId", "type": "uint256" }, { "internalType": "bytes", "name": "_data", "type": "bytes" } ], "name": "safeTransferFrom", "outputs": [], "stateMutability": "nonpayable", "type": "function" }, { "inputs": [ { "internalType": "address", "name": "operator", "type": "address" }, { "internalType": "bool", "name": "approved", "type": "bool" } ], "name": "setApprovalForAll", "outputs": [], "stateMutability": "nonpayable", "type": "function" }, { "inputs": [ { "internalType": "bytes4", "name": "interfaceId", "type": "bytes4" } ], "name": "supportsInterface", "outputs": [ { "internalType": "bool", "name": "", "type": "bool" } ], "stateMutability": "view", "type": "function" }, { "inputs": [], "name": "symbol", "outputs": [ { "internalType": "string", "name": "", "type": "string" } ], "stateMutability": "view", "type": "function" }, { "inputs": [ { "internalType": "uint256", "name": "tokenId", "type": "uint256" } ], "name": "tokenURI", "outputs": [ { "internalType": "string", "name": "", "type": "string" } ], "stateMutability": "view", "type": "function" }, { "inputs": [ { "internalType": "address", "name": "from", "type": "address" }, { "internalType": "address", "name": "to", "type": "address" }, { "internalType": "uint256", "name": "tokenId", "type": "uint256" } ], "name": "transferFrom", "outputs": [], "stateMutability": "nonpayable", "type": "function" }, { "inputs": [ { "internalType": "uint256", "name": "count", "type": "uint256" } ], "name": "mint", "outputs": [], "stateMutability": "nonpayable", "type": "function" }, { "inputs": [], "name": "totalSupply", "outputs": [ { "internalType": "uint256", "name": "", "type": "uint256" } ], "stateMutability": "view", "type": "function" } ];
+let provider = ethers.getDefaultProvider();
+//let provider = new ethers.JsonRpcProvider("http://127.0.0.1:8545/");
 
-// NOTE, when you run truffle test, you will need to update this erc721 address
-let erc721Address = "0xeA367344Ed8DEb3DE732880b7EE8aDCa281935E0"; // local
-let erc721Contract = new web3.eth.Contract(erc721Abi,erc721Address);
+const ogAddress = "0x6023E55814DC00F094386d4eb7e17Ce49ab1A190";
+const ogAbi = [{
+  "inputs": [ {"internalType": "bytes32","name": "_name","type": "bytes32"},
+              {"internalType": "string","name": "_key","type": "string"}],
+  "name": "getTextRecord",
+  "outputs": [{"internalType": "string","name": "","type": "string"}],
+  "stateMutability": "view",
+  "type": "function"
+}];
 
-let totalSupply = 0;
+const ogContract = new ethers.Contract(ogAddress, ogAbi, provider);
 
-async function checkSupply(){
-  try{
-    totalSupply =  await erc721Contract.methods.totalSupply().call();
-    console.log("Supply:" + totalSupply);
-
+function stringToBytes32(_string) {
+  let result = ethers.hexlify(ethers.toUtf8Bytes(_string));
+  while (result.length < 66) {
+    result += '0';
   }
-  catch(err){
-    console.log(err.message);
+  if (result.length !== 66) {
+    throw new Error("invalid web3 implicit bytes32");
   }
+  return result;
 }
 
-checkSupply();
+
 
 express()
+  .use(wildcardSubdomains({
+    namespace: 's',
+    whitelist: ['www'],
+  }))
   .use(express.static(path.join(__dirname, 'public')))
   .use((req, res, next) => {
     if(process.env.NODE_ENV === 'production') {
@@ -48,30 +53,49 @@ express()
   .set('view engine', 'ejs')
   //.use(cors())
   //.options('*', cors())
-  .get('/', (req, res) => res.render('pages/mint'))
-  .get('/api_img/:id.png', function(req,res){
-    if(parseInt(totalSupply) >= req.params.id){
-      try{
-        // write code here to return token image
-      }
-      catch(err){
-        console.log(err.message);
-      }
-    }
-    else{
-      res.send('{"error":"Token does not exist"}');
-    }
+  .get('/', (req, res) => {
+    res.send("TODO: make this work for contracts that return code at base")
   })
-  //*/
-  .get('/api/:id', function(req,res){
-    if(parseInt(totalSupply) >= req.params.id){
-      var jsonData = {};
-      // write code here to return token json data
-      res.send(jsonData);
+  .get('/s/:id/:url', async function(req,res){
+    // assume mime is html, then try to get its actual type
+    let contractReturnMimeType = 'text/html';
+    let fileSuffix = req.params.url.split('.');
+    fileSuffix = fileSuffix[fileSuffix.length-1];
+    let tmpMimeType = mime.lookup(fileSuffix)
+    if(tmpMimeType != false) {
+      contractReturnMimeType = tmpMimeType
+    }
+
+    // ensure the domain is not longer than 32, max for og
+    const domainName = req.params.id;
+    if(domainName.length > 32)
+      throw new Error("Domain too long (32 bytes max for .og");
+    let domainNameString = stringToBytes32(domainName);
+
+    // get the contractcontent text record
+    let contentContractTxt  = await ogContract.getTextRecord( domainNameString,"contentcontract");
+    if(contentContractTxt){
+      try{
+        //get the content
+        const returnData = await provider.call({
+          to: contentContractTxt,
+          data: ethers.hexlify(ethers.toUtf8Bytes("/"+req.params.url))
+        })
+
+        //decode the content
+        let abiCoder = new ethers.AbiCoder();
+        console.log(JSON.stringify(abiCoder));
+        let finalData = abiCoder.decode(["bytes"], returnData)[0].slice(2);
+
+        res.type(contractReturnMimeType); 
+        res.send(Buffer.from(finalData, 'hex'));
+        }
+      catch(e){
+        res.send("Error: " + JSON.stringify(e));
+      }
     }
     else{
-      checkSupply();
-      res.send('{"error":"Token does not exist"}');
+      res.send("Domain \"" + domainName + ".og\" not set")
     }
   })
   //*/

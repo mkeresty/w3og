@@ -11,7 +11,6 @@
 
 <!-- ABOUT THE PROJECT -->
 ## About The Project
-
 Let make .og domains happen
 
 
