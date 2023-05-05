@@ -5,9 +5,9 @@ const ethers = require('ethers');
 const mime = require('mime-types')
 const PORT = process.env.PORT || 5000
 
-let provider = ethers.getDefaultProvider();
+//let provider = ethers.getDefaultProvider();
 
-//let provider = new ethers.JsonRpcProvider("http://127.0.0.1:8545/");
+let provider = new ethers.JsonRpcProvider(process.env.API_URL);
 
 const ogAddress = "0x6023E55814DC00F094386d4eb7e17Ce49ab1A190";
 const ogAbi = [{
