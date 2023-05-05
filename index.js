@@ -6,7 +6,7 @@ const mime = require('mime-types')
 const PORT = process.env.PORT || 5000
 
 let provider = ethers.getDefaultProvider();
-console.log("provider: ", provider)
+
 //let provider = new ethers.JsonRpcProvider("http://127.0.0.1:8545/");
 
 const ogAddress = "0x6023E55814DC00F094386d4eb7e17Ce49ab1A190";
@@ -67,6 +67,7 @@ express()
     if(tmpMimeType != false) {
       contractReturnMimeType = tmpMimeType
     }
+    console.log("provider: ", provider)
 
     // ensure the domain is not longer than 32, max for og
     const domainName = req.params.id;
