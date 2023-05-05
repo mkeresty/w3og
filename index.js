@@ -6,6 +6,7 @@ const mime = require('mime-types')
 const PORT = process.env.PORT || 5000
 
 let provider = ethers.getDefaultProvider();
+console.log("provider: ", provider)
 //let provider = new ethers.JsonRpcProvider("http://127.0.0.1:8545/");
 
 const ogAddress = "0x6023E55814DC00F094386d4eb7e17Ce49ab1A190";
@@ -54,6 +55,7 @@ express()
   //.use(cors())
   //.options('*', cors())
   .get('/', (req, res) => {
+    console.log("in /")
     res.send("TODO: make this work for contracts that return code at base")
   })
   .get('/s/:id/:url', async function(req,res){
